@@ -1,0 +1,10 @@
+services:
+  excalidraw:
+    volumes:
+      - ..:/workspaces/${localWorkspaceFolderBasename}:cached
+    
+    command: sleep infinity
+    
+    environment:
+      - NODE_ENV=development
+ 
