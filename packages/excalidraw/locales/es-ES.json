@@ -409,7 +409,11 @@
     "googleDrive_details": "Guarda un PNG con la escena incrustada en tu Google Drive.",
     "googleDrive_button": "Guardar en Google Drive",
     "googleDrive_folderLabel": "Subcarpeta (opcional)",
-    "googleDrive_folderPlaceholder": "Predeterminada: {{root}}"
+    "googleDrive_folderPlaceholder": "Predeterminada: {{root}}",
+    "googleDrive_fileNameLabel": "Nombre del archivo",
+    "googleDrive_fileNamePlaceholder": "Predeterminado: {{defaultName}}",
+    "googleDrive_folderPickerLabel": "Carpeta",
+    "googleDrive_connectToBrowse": "Conéctate para explorar carpetas."
   },
   "googleDriveDialog": {
     "title": "Google Drive",
@@ -417,12 +421,17 @@
     "connect": "Conectar con Google Drive",
     "disconnect": "Desconectar",
     "refresh": "Actualizar",
+    "back": "Volver",
     "loading": "Cargando archivos de Google Drive...",
     "empty": "No se encontraron archivos de Excalidraw en Google Drive.",
+    "emptyFolder": "No se encontraron carpetas en esta ubicación.",
     "error": "Falló la solicitud a Google Drive.",
     "importSuccess": "Importado desde Google Drive.",
     "exportSuccess": "Guardado en Google Drive.",
-    "notConfigured": "Google Drive no está configurado para este despliegue."
+    "notConfigured": "Google Drive no está configurado para este despliegue.",
+    "currentFolder": "Carpeta actual: {{name}}",
+    "openFolder": "Abrir carpeta",
+    "folderLabel": "Carpeta"
   },
   "helpDialog": {
     "blog": "Lea nuestro blog",

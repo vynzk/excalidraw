@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { loadFromBlob } from "@excalidraw/excalidraw/data/blob";
 import { Dialog } from "@excalidraw/excalidraw/components/Dialog";
@@ -11,8 +11,10 @@ import {
   clearGoogleDriveAuth,
   downloadGoogleDriveFile,
   ensureGoogleDriveToken,
+  ensureGoogleDriveRootFolder,
   getCachedGoogleDriveToken,
   isGoogleDriveConfigured,
+  listGoogleDriveFolders,
   listGoogleDriveFiles,
 } from "../data/googleDrive";
 
@@ -29,6 +31,9 @@ export const GoogleDriveDialog: React.FC<{
 }> = ({ open, onClose, excalidrawAPI }) => {
   const { t } = useI18n();
   const [files, setFiles] = useState<DriveFile[]>([]);
+  const [folders, setFolders] = useState<DriveFile[]>([]);
+  const [folderPath, setFolderPath] = useState<DriveFile[]>([]);
+  const folderPathRef = useRef<DriveFile[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(() =>
@@ -37,14 +42,32 @@ export const GoogleDriveDialog: React.FC<{
 
   const configured = isGoogleDriveConfigured();
 
+  useEffect(() => {
+    folderPathRef.current = folderPath;
+  }, [folderPath]);
+
+  const loadFolderContents = useCallback(
+    async (token: string, folder: DriveFile) => {
+      const [folderList, fileList] = await Promise.all([
+        listGoogleDriveFolders(token, { parentId: folder.id }),
+        listGoogleDriveFiles(token, { parentId: folder.id }),
+      ]);
+      setFolders(folderList);
+      setFiles(fileList);
+    },
+    [],
+  );
+
   const refreshFiles = useCallback(
-    async (interactive: boolean) => {
+    async (interactive: boolean, opts: { resetPath?: boolean } = {}) => {
       if (!configured) {
         return;
       }
       if (!interactive && !getCachedGoogleDriveToken()) {
         setIsConnected(false);
         setFiles([]);
+        setFolders([]);
+        setFolderPath([]);
         return;
       }
 
@@ -53,8 +76,17 @@ export const GoogleDriveDialog: React.FC<{
       try {
         const token = await ensureGoogleDriveToken({ interactive });
         setIsConnected(true);
-        const list = await listGoogleDriveFiles(token);
-        setFiles(list);
+        const rootFolder = await ensureGoogleDriveRootFolder(token);
+        let activePath = folderPathRef.current;
+        if (opts.resetPath || !folderPathRef.current.length) {
+          activePath = [rootFolder];
+          setFolderPath(activePath);
+        } else if (folderPathRef.current[0]?.id !== rootFolder.id) {
+          activePath = [rootFolder];
+          setFolderPath(activePath);
+        }
+        const currentFolder = activePath[activePath.length - 1];
+        await loadFolderContents(token, currentFolder);
       } catch (err: any) {
         if (!interactive) {
           setIsConnected(false);
@@ -64,13 +96,13 @@ export const GoogleDriveDialog: React.FC<{
         setIsLoading(false);
       }
     },
-    [configured, t],
+    [configured, loadFolderContents, t],
   );
 
   useEffect(() => {
     if (open) {
       setIsConnected(Boolean(getCachedGoogleDriveToken()));
-      refreshFiles(false);
+      refreshFiles(false, { resetPath: true });
     }
   }, [open, refreshFiles]);
 
@@ -78,6 +110,44 @@ export const GoogleDriveDialog: React.FC<{
     clearGoogleDriveAuth();
     setIsConnected(false);
     setFiles([]);
+    setFolders([]);
+    setFolderPath([]);
+  };
+
+  const handleOpenFolder = async (folder: DriveFile) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = await ensureGoogleDriveToken({ interactive: false });
+      const nextPath = [...folderPath, folder];
+      setFolderPath(nextPath);
+      await loadFolderContents(token, folder);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || t("googleDriveDialog.error"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoUpFolder = async () => {
+    if (folderPath.length <= 1) {
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = await ensureGoogleDriveToken({ interactive: false });
+      const nextPath = folderPath.slice(0, -1);
+      setFolderPath(nextPath);
+      const currentFolder = nextPath[nextPath.length - 1];
+      await loadFolderContents(token, currentFolder);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || t("googleDriveDialog.error"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleImport = async (fileId: string) => {
@@ -176,12 +246,48 @@ export const GoogleDriveDialog: React.FC<{
 
         {configured && isConnected && (
           <div className="GoogleDriveDialog__content">
+            {folderPath.length > 0 && (
+              <div className="GoogleDriveDialog__path">
+                <ToolButton
+                  type="button"
+                  aria-label={t("googleDriveDialog.back")}
+                  title={t("googleDriveDialog.back")}
+                  showAriaLabel={true}
+                  onClick={handleGoUpFolder}
+                  disabled={folderPath.length <= 1 || isLoading}
+                />
+                <span>
+                  {t("googleDriveDialog.currentFolder", {
+                    name: folderPath.map((entry) => entry.name).join(" / "),
+                  })}
+                </span>
+              </div>
+            )}
             {isLoading ? (
               <div className="GoogleDriveDialog__loading">
                 {t("googleDriveDialog.loading")}
               </div>
-            ) : files.length ? (
+            ) : folders.length || files.length ? (
               <ul className="GoogleDriveDialog__list">
+                {folders.map((folder) => (
+                  <li key={folder.id} className="GoogleDriveDialog__item">
+                    <div className="GoogleDriveDialog__item__details">
+                      <div className="GoogleDriveDialog__item__name">
+                        {folder.name}
+                      </div>
+                      <div className="GoogleDriveDialog__item__meta">
+                        {t("googleDriveDialog.folderLabel")}
+                      </div>
+                    </div>
+                    <ToolButton
+                      type="button"
+                      aria-label={t("googleDriveDialog.openFolder")}
+                      title={t("googleDriveDialog.openFolder")}
+                      showAriaLabel={true}
+                      onClick={() => handleOpenFolder(folder)}
+                    />
+                  </li>
+                ))}
                 {files.map((file) => (
                   <li key={file.id} className="GoogleDriveDialog__item">
                     <div className="GoogleDriveDialog__item__details">
