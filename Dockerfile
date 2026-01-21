@@ -10,8 +10,12 @@ RUN --mount=type=cache,target=/root/.cache/yarn \
     npm_config_target_arch=${TARGETARCH} yarn --network-timeout 600000
 
 ARG NODE_ENV=production
+ARG VITE_APP_GOOGLE_DRIVE_CLIENT_ID
 
-RUN npm_config_target_arch=${TARGETARCH} yarn build:app:docker
+RUN if [ -z "$VITE_APP_GOOGLE_DRIVE_CLIENT_ID" ]; then \
+      unset VITE_APP_GOOGLE_DRIVE_CLIENT_ID; \
+    fi; \
+    npm_config_target_arch=${TARGETARCH} yarn build:app:docker
 
 FROM --platform=${TARGETPLATFORM} nginx:1.27-alpine
 

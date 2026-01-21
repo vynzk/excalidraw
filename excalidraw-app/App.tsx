@@ -96,10 +96,8 @@ import Collab, {
 import { AppFooter } from "./components/AppFooter";
 import { AppMainMenu } from "./components/AppMainMenu";
 import { AppWelcomeScreen } from "./components/AppWelcomeScreen";
-import {
-  ExportToExcalidrawPlus,
-  exportToExcalidrawPlus,
-} from "./components/ExportToExcalidrawPlus";
+import { exportToExcalidrawPlus } from "./components/ExportToExcalidrawPlus";
+import { ExportToGoogleDrive } from "./components/ExportToGoogleDrive";
 import { TopErrorBoundary } from "./components/TopErrorBoundary";
 
 import {
@@ -108,6 +106,7 @@ import {
   isCollaborationLink,
   loadScene,
 } from "./data";
+import { isGoogleDriveConfigured } from "./data/googleDrive";
 
 import { updateStaleImageStatuses } from "./data/FileManager";
 import {
@@ -140,6 +139,7 @@ import "./index.scss";
 
 import { ExcalidrawPlusPromoBanner } from "./components/ExcalidrawPlusPromoBanner";
 import { AppSidebar } from "./components/AppSidebar";
+import { GoogleDriveDialog } from "./components/GoogleDriveDialog";
 
 import type { CollabAPI } from "./collab/Collab";
 
@@ -378,6 +378,8 @@ const ExcalidrawWrapper = () => {
     return isCollaborationLink(window.location.href);
   });
   const collabError = useAtomValue(collabErrorIndicatorAtom);
+  const [isGoogleDriveDialogOpen, setGoogleDriveDialogOpen] = useState(false);
+  const showGoogleDrive = true;
 
   useHandleLibrary({
     excalidrawAPI,
@@ -820,24 +822,32 @@ const ExcalidrawWrapper = () => {
               renderCustomUI: excalidrawAPI
                 ? (elements, appState, files) => {
                     return (
-                      <ExportToExcalidrawPlus
-                        elements={elements}
-                        appState={appState}
-                        files={files}
-                        name={excalidrawAPI.getName()}
-                        onError={(error) => {
-                          excalidrawAPI?.updateScene({
-                            appState: {
-                              errorMessage: error.message,
-                            },
-                          });
-                        }}
-                        onSuccess={() => {
-                          excalidrawAPI.updateScene({
-                            appState: { openDialog: null },
-                          });
-                        }}
-                      />
+                      <>
+                        {showGoogleDrive && (
+                          <ExportToGoogleDrive
+                            elements={elements}
+                            appState={appState}
+                            files={files}
+                            name={excalidrawAPI.getName()}
+                            onError={(error) => {
+                              excalidrawAPI?.updateScene({
+                                appState: {
+                                  errorMessage: error.message,
+                                },
+                              });
+                            }}
+                            onSuccess={() => {
+                              excalidrawAPI.setToast({
+                                message: t("googleDriveDialog.exportSuccess"),
+                                duration: 4000,
+                              });
+                              excalidrawAPI.updateScene({
+                                appState: { openDialog: null },
+                              });
+                            }}
+                          />
+                        )}
+                      </>
                     );
                   }
                 : undefined,
@@ -888,6 +898,8 @@ const ExcalidrawWrapper = () => {
           theme={appTheme}
           setTheme={(theme) => setAppTheme(theme)}
           refresh={() => forceRefresh((prev) => !prev)}
+          onGoogleDriveOpen={() => setGoogleDriveDialogOpen(true)}
+          showGoogleDrive={showGoogleDrive}
         />
         <AppWelcomeScreen
           onCollabDialogOpen={onCollabDialogOpen}
@@ -932,6 +944,13 @@ const ExcalidrawWrapper = () => {
             link={latestShareableLink}
             onCloseRequest={() => setLatestShareableLink(null)}
             setErrorMessage={setErrorMessage}
+          />
+        )}
+        {showGoogleDrive && (
+          <GoogleDriveDialog
+            open={isGoogleDriveDialogOpen}
+            onClose={() => setGoogleDriveDialogOpen(false)}
+            excalidrawAPI={excalidrawAPI}
           />
         )}
         {excalidrawAPI && !isCollabDisabled && (

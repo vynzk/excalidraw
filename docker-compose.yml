@@ -3,7 +3,8 @@ services:
     build:
       context: .
       args:
-        - NODE_ENV=development
+        NODE_ENV: development
+        VITE_APP_GOOGLE_DRIVE_CLIENT_ID: ${VITE_APP_GOOGLE_DRIVE_CLIENT_ID:-}
     container_name: excalidraw
     ports:
       - "3000:80"

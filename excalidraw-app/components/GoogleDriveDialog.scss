@@ -1,0 +1,103 @@
+.excalidraw {
+  .GoogleDriveDialog {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .GoogleDriveDialog__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .GoogleDriveDialog__header__icon {
+    display: flex;
+    align-items: center;
+    color: var(--color-primary-darker);
+  }
+
+  .GoogleDriveDialog__actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .GoogleDriveDialog__notice,
+  .GoogleDriveDialog__error,
+  .GoogleDriveDialog__loading,
+  .GoogleDriveDialog__empty {
+    padding: 0.75rem;
+    border-radius: var(--border-radius-lg);
+    background: var(--color-surface-mid);
+  }
+
+  .GoogleDriveDialog__error {
+    color: var(--color-danger);
+    background: var(--color-danger-background);
+  }
+
+  .GoogleDriveDialog__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 320px;
+    overflow: auto;
+  }
+
+  .GoogleDriveDialog__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--dialog-border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--color-surface-lowest);
+  }
+
+  .GoogleDriveDialog__item__details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .GoogleDriveDialog__item__name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 42ch;
+  }
+
+  .GoogleDriveDialog__item__meta {
+    font-size: 0.75rem;
+    color: var(--color-gray-60);
+  }
+
+  .GoogleDriveDialog__item__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .GoogleDriveDialog__path {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--color-gray-70);
+  }
+
+  .GoogleDriveDialog__create {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: end;
+  }
+}
