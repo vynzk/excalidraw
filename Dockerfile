@@ -1,21 +1,19 @@
-FROM --platform=${BUILDPLATFORM} node:18 AS build
 
+FROM node:18 AS build 
+# FROM --platform = $ {BUILDPLATFORM} node:18 AS build # uncomment for buildx, no google run
 WORKDIR /opt/node_app
 
 COPY . .
 
-# do not ignore optional dependencies:
+# do not ignore optional dependencies: 
+
 # Error: Cannot find module @rollup/rollup-linux-x64-gnu
 RUN --mount=type=cache,target=/root/.cache/yarn \
     npm_config_target_arch=${TARGETARCH} yarn --network-timeout 600000
 
 ARG NODE_ENV=production
-ARG VITE_APP_GOOGLE_DRIVE_CLIENT_ID
 
-RUN if [ -z "$VITE_APP_GOOGLE_DRIVE_CLIENT_ID" ]; then \
-      unset VITE_APP_GOOGLE_DRIVE_CLIENT_ID; \
-    fi; \
-    npm_config_target_arch=${TARGETARCH} yarn build:app:docker
+RUN npm_config_target_arch=${TARGETARCH} yarn build:app:docker
 
 FROM --platform=${TARGETPLATFORM} nginx:1.27-alpine
 
