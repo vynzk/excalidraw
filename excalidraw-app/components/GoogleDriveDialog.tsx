@@ -7,8 +7,6 @@ import { useI18n } from "@excalidraw/excalidraw/i18n";
 
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
-import type { DriveFile } from "../data/googleDrive";
-
 import {
   clearGoogleDriveAuth,
   downloadGoogleDriveFile,
@@ -21,6 +19,8 @@ import {
 import { GoogleDriveIcon } from "./GoogleDriveIcon";
 
 import "./GoogleDriveDialog.scss";
+
+import type { DriveFile } from "../data/googleDrive";
 
 export const GoogleDriveDialog: React.FC<{
   open: boolean;

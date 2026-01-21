@@ -89,7 +89,9 @@ export const ExportToGoogleDrive: React.FC<{
         <GoogleDriveIcon size={36} />
       </div>
       <h2>{t("exportDialog.googleDrive_title")}</h2>
-      <div className="Card-details">{t("exportDialog.googleDrive_details")}</div>
+      <div className="Card-details">
+        {t("exportDialog.googleDrive_details")}
+      </div>
       <ToolButton
         className="Card-button"
         type="button"

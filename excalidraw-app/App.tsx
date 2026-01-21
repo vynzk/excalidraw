@@ -382,7 +382,7 @@ const ExcalidrawWrapper = () => {
   });
   const collabError = useAtomValue(collabErrorIndicatorAtom);
   const [isGoogleDriveDialogOpen, setGoogleDriveDialogOpen] = useState(false);
-  const showGoogleDrive = isGoogleDriveConfigured();
+  const showGoogleDrive = true;
 
   useHandleLibrary({
     excalidrawAPI,

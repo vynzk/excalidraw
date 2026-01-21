@@ -1,3 +1,19 @@
+declare global {
+  interface Window {
+    google?: {
+      accounts?: {
+        oauth2?: {
+          initTokenClient: (config: {
+            client_id: string;
+            scope: string;
+            callback: (response: GoogleTokenResponse) => void;
+          }) => TokenClient;
+        };
+      };
+    };
+  }
+}
+
 const GOOGLE_IDENTITY_SCRIPT_ID = "google-identity-services";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const DRIVE_API_BASE_URL = "https://www.googleapis.com/drive/v3";
@@ -38,7 +54,10 @@ const getClientId = () => import.meta.env.VITE_APP_GOOGLE_DRIVE_CLIENT_ID;
 export const isGoogleDriveConfigured = () => Boolean(getClientId());
 
 const loadCachedToken = () => {
-  if (cachedToken && Date.now() < cachedTokenExpiry - TOKEN_EXPIRY_SAFETY_WINDOW_MS) {
+  if (
+    cachedToken &&
+    Date.now() < cachedTokenExpiry - TOKEN_EXPIRY_SAFETY_WINDOW_MS
+  ) {
     return cachedToken;
   }
 
@@ -106,7 +125,11 @@ const loadGoogleIdentityServices = () => {
     const existing = document.getElementById(GOOGLE_IDENTITY_SCRIPT_ID);
     if (existing) {
       existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Failed to load Google Identity Services")), { once: true });
+      existing.addEventListener(
+        "error",
+        () => reject(new Error("Failed to load Google Identity Services")),
+        { once: true },
+      );
       return;
     }
 
@@ -116,7 +139,8 @@ const loadGoogleIdentityServices = () => {
     script.async = true;
     script.defer = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Google Identity Services"));
+    script.onerror = () =>
+      reject(new Error("Failed to load Google Identity Services"));
     document.head.appendChild(script);
   });
 
@@ -208,14 +232,17 @@ const fetchDrive = async (url: string, token: string, init?: RequestInit) => {
   return response;
 };
 
-export const listGoogleDriveFiles = async (token: string): Promise<DriveFile[]> => {
+export const listGoogleDriveFiles = async (
+  token: string,
+): Promise<DriveFile[]> => {
   const query = [
     "trashed = false",
     `appProperties has { key='${DRIVE_APP_PROPERTY_KEY}' and value='${DRIVE_APP_PROPERTY_VALUE}' }`,
   ].join(" and ");
   const params = new URLSearchParams({
     q: query,
-    fields: "files(id,name,mimeType,modifiedTime,thumbnailLink,iconLink,webViewLink)",
+    fields:
+      "files(id,name,mimeType,modifiedTime,thumbnailLink,iconLink,webViewLink)",
     orderBy: "modifiedTime desc",
     pageSize: "50",
   });
