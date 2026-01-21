@@ -18,8 +18,12 @@ const GOOGLE_IDENTITY_SCRIPT_ID = "google-identity-services";
 const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const DRIVE_API_BASE_URL = "https://www.googleapis.com/drive/v3";
 const DRIVE_UPLOAD_BASE_URL = "https://www.googleapis.com/upload/drive/v3";
+const DRIVE_FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
 const DRIVE_APP_PROPERTY_KEY = "excalidraw";
 const DRIVE_APP_PROPERTY_VALUE = "true";
+const DRIVE_ROOT_FOLDER_PROPERTY_KEY = "excalidraw_root_folder";
+const DRIVE_ROOT_FOLDER_PROPERTY_VALUE = "true";
+export const GOOGLE_DRIVE_ROOT_FOLDER_NAME = "ExcalidrawMyPlus";
 const DRIVE_TOKEN_STORAGE_KEY = "excalidraw_drive_token_v1";
 const DRIVE_TOKEN_EXPIRY_STORAGE_KEY = "excalidraw_drive_token_expiry_v1";
 const TOKEN_EXPIRY_SAFETY_WINDOW_MS = 60 * 1000;
@@ -232,6 +236,56 @@ const fetchDrive = async (url: string, token: string, init?: RequestInit) => {
   return response;
 };
 
+const escapeDriveQueryValue = (value: string) =>
+  value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+const buildAppPropertiesQuery = (
+  appProperties?: Record<string, string>,
+) => {
+  if (!appProperties) {
+    return [];
+  }
+
+  return Object.entries(appProperties).map(
+    ([key, value]) =>
+      `appProperties has { key='${escapeDriveQueryValue(
+        key,
+      )}' and value='${escapeDriveQueryValue(value)}' }`,
+  );
+};
+
+const findGoogleDriveFolder = async ({
+  token,
+  name,
+  parentId,
+  appProperties,
+}: {
+  token: string;
+  name: string;
+  parentId?: string;
+  appProperties?: Record<string, string>;
+}): Promise<DriveFile | null> => {
+  const query = [
+    "trashed = false",
+    `mimeType = '${DRIVE_FOLDER_MIME_TYPE}'`,
+    `name = '${escapeDriveQueryValue(name)}'`,
+    ...(parentId ? [`'${parentId}' in parents`] : []),
+    ...buildAppPropertiesQuery(appProperties),
+  ].join(" and ");
+  const params = new URLSearchParams({
+    q: query,
+    fields: "files(id,name,mimeType)",
+    pageSize: "1",
+  });
+
+  const response = await fetchDrive(
+    `${DRIVE_API_BASE_URL}/files?${params.toString()}`,
+    token,
+  );
+  const data = await response.json();
+  return data.files?.[0] ?? null;
+};
+
 export const listGoogleDriveFiles = async (
   token: string,
 ): Promise<DriveFile[]> => {
@@ -255,25 +309,101 @@ export const listGoogleDriveFiles = async (
   return data.files || [];
 };
 
+export const ensureGoogleDriveFolder = async ({
+  token,
+  name,
+  parentId,
+  appProperties,
+}: {
+  token: string;
+  name: string;
+  parentId?: string;
+  appProperties?: Record<string, string>;
+}): Promise<DriveFile> => {
+  const existing = await findGoogleDriveFolder({
+    token,
+    name,
+    parentId,
+    appProperties,
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const metadata: {
+    name: string;
+    mimeType: string;
+    parents?: string[];
+    appProperties?: Record<string, string>;
+  } = {
+    name,
+    mimeType: DRIVE_FOLDER_MIME_TYPE,
+  };
+
+  if (parentId) {
+    metadata.parents = [parentId];
+  }
+
+  if (appProperties) {
+    metadata.appProperties = appProperties;
+  }
+
+  const response = await fetchDrive(
+    `${DRIVE_API_BASE_URL}/files?fields=id,name,mimeType`,
+    token,
+    {
+      method: "POST",
+      body: JSON.stringify(metadata),
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+    },
+  );
+
+  return response.json();
+};
+
+export const ensureGoogleDriveRootFolder = async (token: string) => {
+  return ensureGoogleDriveFolder({
+    token,
+    name: GOOGLE_DRIVE_ROOT_FOLDER_NAME,
+    appProperties: {
+      [DRIVE_ROOT_FOLDER_PROPERTY_KEY]: DRIVE_ROOT_FOLDER_PROPERTY_VALUE,
+    },
+  });
+};
+
 export const uploadGoogleDriveFile = async ({
   token,
   name,
   mimeType,
   blob,
+  parentId,
 }: {
   token: string;
   name: string;
   mimeType: string;
   blob: Blob;
+  parentId?: string;
 }): Promise<DriveFile> => {
   const boundary = `excalidraw-${Math.random().toString(16).slice(2)}`;
-  const metadata = {
+  const metadata: {
+    name: string;
+    mimeType: string;
+    parents?: string[];
+    appProperties: Record<string, string>;
+  } = {
     name,
     mimeType,
     appProperties: {
       [DRIVE_APP_PROPERTY_KEY]: DRIVE_APP_PROPERTY_VALUE,
     },
   };
+
+  if (parentId) {
+    metadata.parents = [parentId];
+  }
 
   const body = new Blob(
     [

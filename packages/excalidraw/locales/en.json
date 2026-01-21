@@ -407,7 +407,9 @@
     "excalidrawplus_exportError": "Couldn't export to Excalidraw+ at this moment...",
     "googleDrive_title": "Google Drive",
     "googleDrive_details": "Save a PNG with embedded scene data to your Google Drive.",
-    "googleDrive_button": "Save to Google Drive"
+    "googleDrive_button": "Save to Google Drive",
+    "googleDrive_folderLabel": "Subfolder (optional)",
+    "googleDrive_folderPlaceholder": "Default: {{root}}"
   },
   "googleDriveDialog": {
     "title": "Google Drive",

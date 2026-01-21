@@ -407,7 +407,9 @@
     "excalidrawplus_exportError": "No se pudo exportar a Excalidraw+ en este momento...",
     "googleDrive_title": "Google Drive",
     "googleDrive_details": "Guarda un PNG con la escena incrustada en tu Google Drive.",
-    "googleDrive_button": "Guardar en Google Drive"
+    "googleDrive_button": "Guardar en Google Drive",
+    "googleDrive_folderLabel": "Subcarpeta (opcional)",
+    "googleDrive_folderPlaceholder": "Predeterminada: {{root}}"
   },
   "googleDriveDialog": {
     "title": "Google Drive",

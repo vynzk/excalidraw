@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   DEFAULT_EXPORT_PADDING,
@@ -8,6 +8,7 @@ import {
 } from "@excalidraw/common";
 import { trackEvent } from "@excalidraw/excalidraw/analytics";
 import { Card } from "@excalidraw/excalidraw/components/Card";
+import { TextField } from "@excalidraw/excalidraw/components/TextField";
 import { ToolButton } from "@excalidraw/excalidraw/components/ToolButton";
 import { prepareElementsForExport } from "@excalidraw/excalidraw/data";
 import { useI18n } from "@excalidraw/excalidraw/i18n";
@@ -18,13 +19,26 @@ import type { BinaryFiles, UIAppState } from "@excalidraw/excalidraw/types";
 
 import {
   ensureGoogleDriveToken,
+  ensureGoogleDriveFolder,
+  ensureGoogleDriveRootFolder,
+  GOOGLE_DRIVE_ROOT_FOLDER_NAME,
   uploadGoogleDriveFile,
 } from "../data/googleDrive";
 
 import { GoogleDriveIcon } from "./GoogleDriveIcon";
 
+import "./ExportToGoogleDrive.scss";
+
 const normalizeFileName = (name: string) => {
   const trimmed = name.trim() || DEFAULT_FILENAME;
+  return trimmed.replace(/[\\/:*?"<>|]+/g, "-");
+};
+
+const normalizeFolderName = (name: string) => {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    return "";
+  }
   return trimmed.replace(/[\\/:*?"<>|]+/g, "-");
 };
 
@@ -44,6 +58,7 @@ export const ExportToGoogleDrive: React.FC<{
   onSuccess: () => void;
 }> = ({ elements, appState, files, name, onError, onSuccess }) => {
   const { t } = useI18n();
+  const [folderName, setFolderName] = useState("");
 
   const handleExport = async () => {
     if (!elements.length) {
@@ -73,11 +88,23 @@ export const ExportToGoogleDrive: React.FC<{
     });
 
     const token = await ensureGoogleDriveToken({ interactive: true });
+    const rootFolder = await ensureGoogleDriveRootFolder(token);
+    const normalizedFolderName = normalizeFolderName(folderName);
+    const targetFolderId = normalizedFolderName
+      ? (
+          await ensureGoogleDriveFolder({
+            token,
+            name: normalizedFolderName,
+            parentId: rootFolder.id,
+          })
+        ).id
+      : rootFolder.id;
     await uploadGoogleDriveFile({
       token,
       name: getExportFileName(name, exportAppState.exportEmbedScene),
       mimeType: MIME_TYPES.png,
       blob,
+      parentId: targetFolderId,
     });
 
     onSuccess();
@@ -91,6 +118,17 @@ export const ExportToGoogleDrive: React.FC<{
       <h2>{t("exportDialog.googleDrive_title")}</h2>
       <div className="Card-details">
         {t("exportDialog.googleDrive_details")}
+        <div className="ExportToGoogleDrive__folder">
+          <TextField
+            label={t("exportDialog.googleDrive_folderLabel")}
+            placeholder={t("exportDialog.googleDrive_folderPlaceholder", {
+              root: GOOGLE_DRIVE_ROOT_FOLDER_NAME,
+            })}
+            value={folderName}
+            onChange={setFolderName}
+            fullWidth
+          />
+        </div>
       </div>
       <ToolButton
         className="Card-button"
