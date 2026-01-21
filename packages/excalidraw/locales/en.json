@@ -404,7 +404,23 @@
     "link_button": "Export to Link",
     "excalidrawplus_description": "Save the scene to your Excalidraw+ workspace.",
     "excalidrawplus_button": "Export",
-    "excalidrawplus_exportError": "Couldn't export to Excalidraw+ at this moment..."
+    "excalidrawplus_exportError": "Couldn't export to Excalidraw+ at this moment...",
+    "googleDrive_title": "Google Drive",
+    "googleDrive_details": "Save a PNG with embedded scene data to your Google Drive.",
+    "googleDrive_button": "Save to Google Drive"
+  },
+  "googleDriveDialog": {
+    "title": "Google Drive",
+    "menuItem": "Open from Google Drive",
+    "connect": "Connect to Google Drive",
+    "disconnect": "Disconnect",
+    "refresh": "Refresh",
+    "loading": "Loading Google Drive files...",
+    "empty": "No Excalidraw files found in Google Drive.",
+    "error": "Google Drive request failed.",
+    "importSuccess": "Imported from Google Drive.",
+    "exportSuccess": "Saved to Google Drive.",
+    "notConfigured": "Google Drive is not configured for this deployment."
   },
   "helpDialog": {
     "blog": "Read our blog",

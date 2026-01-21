@@ -7,6 +7,7 @@ import { MainMenu } from "@excalidraw/excalidraw/index";
 import React from "react";
 
 import { isDevEnv } from "@excalidraw/common";
+import { t } from "@excalidraw/excalidraw/i18n";
 
 import type { Theme } from "@excalidraw/element/types";
 
@@ -14,6 +15,7 @@ import { LanguageList } from "../app-language/LanguageList";
 import { isExcalidrawPlusSignedUser } from "../app_constants";
 
 import { saveDebugState } from "./DebugCanvas";
+import { GoogleDriveIcon } from "./GoogleDriveIcon";
 
 export const AppMainMenu: React.FC<{
   onCollabDialogOpen: () => any;
@@ -22,10 +24,20 @@ export const AppMainMenu: React.FC<{
   theme: Theme | "system";
   setTheme: (theme: Theme | "system") => void;
   refresh: () => void;
+  onGoogleDriveOpen: () => void;
+  showGoogleDrive: boolean;
 }> = React.memo((props) => {
   return (
     <MainMenu>
       <MainMenu.DefaultItems.LoadScene />
+      {props.showGoogleDrive && (
+        <MainMenu.Item
+          icon={<GoogleDriveIcon size={16} />}
+          onSelect={props.onGoogleDriveOpen}
+        >
+          {t("googleDriveDialog.menuItem")}
+        </MainMenu.Item>
+      )}
       <MainMenu.DefaultItems.SaveToActiveFile />
       <MainMenu.DefaultItems.Export />
       <MainMenu.DefaultItems.SaveAsImage />
