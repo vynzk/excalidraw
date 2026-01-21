@@ -1,10 +1,20 @@
 services:
   excalidraw:
-    volumes:
-      - ..:/workspaces/${localWorkspaceFolderBasename}:cached
-    
-    command: sleep infinity
-    
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    container_name: excalidraw-dev
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
     environment:
       - NODE_ENV=development
- 
+    volumes:
+      - ..:/workspaces/excalidraw:cached
+      - node_modules:/workspaces/excalidraw/node_modules
+    command: sleep infinity
+
+volumes:
+  node_modules:
