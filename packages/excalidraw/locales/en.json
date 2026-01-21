@@ -409,7 +409,15 @@
     "googleDrive_details": "Save a PNG with embedded scene data to your Google Drive.",
     "googleDrive_button": "Save to Google Drive",
     "googleDrive_folderLabel": "Subfolder (optional)",
-    "googleDrive_folderPlaceholder": "Default: {{root}}"
+    "googleDrive_folderPlaceholder": "Default: {{root}}",
+    "googleDrive_fileNameLabel": "File name",
+    "googleDrive_fileNamePlaceholder": "Default: {{defaultName}}",
+    "googleDrive_folderPickerLabel": "Folder",
+    "googleDrive_connectToBrowse": "Connect to browse folders.",
+    "googleDrive_newFolderLabel": "New folder name",
+    "googleDrive_newFolderPlaceholder": "Create inside {{root}}",
+    "googleDrive_createFolderButton": "Create folder",
+    "googleDrive_invalidFolderName": "Enter a valid folder name."
   },
   "googleDriveDialog": {
     "title": "Google Drive",
@@ -417,12 +425,17 @@
     "connect": "Connect to Google Drive",
     "disconnect": "Disconnect",
     "refresh": "Refresh",
+    "back": "Back",
     "loading": "Loading Google Drive files...",
     "empty": "No Excalidraw files found in Google Drive.",
+    "emptyFolder": "No folders found in this location.",
     "error": "Google Drive request failed.",
     "importSuccess": "Imported from Google Drive.",
     "exportSuccess": "Saved to Google Drive.",
-    "notConfigured": "Google Drive is not configured for this deployment."
+    "notConfigured": "Google Drive is not configured for this deployment.",
+    "currentFolder": "Current folder: {{name}}",
+    "openFolder": "Open folder",
+    "folderLabel": "Folder"
   },
   "helpDialog": {
     "blog": "Read our blog",

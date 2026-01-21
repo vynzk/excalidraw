@@ -1,6 +1,80 @@
 .excalidraw {
-  .ExportToGoogleDrive__folder {
+  .ExportToGoogleDrive__field {
     margin-top: 0.75rem;
     text-align: left;
+  }
+
+  .ExportToGoogleDrive__folderBrowser {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .ExportToGoogleDrive__folderBrowser__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+
+  .ExportToGoogleDrive__folderBrowser__create {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: end;
+  }
+
+  .ExportToGoogleDrive__folderBrowser__path {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--color-gray-70);
+  }
+
+  .ExportToGoogleDrive__folderBrowser__loading,
+  .ExportToGoogleDrive__folderBrowser__empty,
+  .ExportToGoogleDrive__folderBrowser__error {
+    padding: 0.6rem;
+    border-radius: var(--border-radius-lg);
+    background: var(--color-surface-mid);
+  }
+
+  .ExportToGoogleDrive__folderBrowser__error {
+    color: var(--color-danger);
+    background: var(--color-danger-background);
+  }
+
+  .ExportToGoogleDrive__folderBrowser__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow: auto;
+  }
+
+  .ExportToGoogleDrive__folderBrowser__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--dialog-border-color);
+    border-radius: var(--border-radius-lg);
+    background: var(--color-surface-lowest);
+  }
+
+  .ExportToGoogleDrive__folderBrowser__name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 32ch;
   }
 }

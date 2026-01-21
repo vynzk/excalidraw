@@ -288,10 +288,12 @@ const findGoogleDriveFolder = async ({
 
 export const listGoogleDriveFiles = async (
   token: string,
+  opts: { parentId?: string } = {},
 ): Promise<DriveFile[]> => {
   const query = [
     "trashed = false",
     `appProperties has { key='${DRIVE_APP_PROPERTY_KEY}' and value='${DRIVE_APP_PROPERTY_VALUE}' }`,
+    ...(opts.parentId ? [`'${opts.parentId}' in parents`] : []),
   ].join(" and ");
   const params = new URLSearchParams({
     q: query,
@@ -299,6 +301,30 @@ export const listGoogleDriveFiles = async (
       "files(id,name,mimeType,modifiedTime,thumbnailLink,iconLink,webViewLink)",
     orderBy: "modifiedTime desc",
     pageSize: "50",
+  });
+
+  const response = await fetchDrive(
+    `${DRIVE_API_BASE_URL}/files?${params.toString()}`,
+    token,
+  );
+  const data = await response.json();
+  return data.files || [];
+};
+
+export const listGoogleDriveFolders = async (
+  token: string,
+  opts: { parentId?: string } = {},
+): Promise<DriveFile[]> => {
+  const query = [
+    "trashed = false",
+    `mimeType = '${DRIVE_FOLDER_MIME_TYPE}'`,
+    ...(opts.parentId ? [`'${opts.parentId}' in parents`] : []),
+  ].join(" and ");
+  const params = new URLSearchParams({
+    q: query,
+    fields: "files(id,name,mimeType,modifiedTime,iconLink)",
+    orderBy: "name",
+    pageSize: "100",
   });
 
   const response = await fetchDrive(
