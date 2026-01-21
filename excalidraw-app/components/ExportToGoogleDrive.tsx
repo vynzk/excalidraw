@@ -26,6 +26,7 @@ import {
   ensureGoogleDriveRootFolder,
   GOOGLE_DRIVE_ROOT_FOLDER_NAME,
   uploadGoogleDriveFile,
+  deleteGoogleDriveFile,
 } from "../data/googleDrive";
 
 import { GoogleDriveIcon } from "./GoogleDriveIcon";
@@ -177,20 +178,48 @@ export const ExportToGoogleDrive: React.FC<{
       const token = await ensureGoogleDriveToken({ interactive: true });
       setIsConnected(true);
       const rootFolder = await ensureGoogleDriveRootFolder(token);
+      const parentFolder =
+        folderPath.length > 0 ? folderPath[folderPath.length - 1] : rootFolder;
       await ensureGoogleDriveFolder({
         token,
         name: normalizedFolderName,
-        parentId: rootFolder.id,
+        parentId: parentFolder.id,
       });
       setNewFolderName("");
-      setFolderPath([rootFolder]);
-      await loadFolders(token, rootFolder.id);
+      if (!folderPath.length) {
+        setFolderPath([rootFolder]);
+      }
+      await loadFolders(token, parentFolder.id);
     } catch (error: any) {
       setFolderError(error?.message || t("googleDriveDialog.error"));
     } finally {
       setIsCreatingFolder(false);
     }
-  }, [loadFolders, newFolderName, t]);
+  }, [folderPath, loadFolders, newFolderName, t]);
+
+  const handleDeleteFolder = useCallback(
+    async (folderId: string) => {
+      setIsFolderLoading(true);
+      setFolderError(null);
+      try {
+        const token = await ensureGoogleDriveToken({ interactive: true });
+        const currentFolder = folderPath[folderPath.length - 1];
+        await deleteGoogleDriveFile(token, folderId);
+        if (currentFolder) {
+          await loadFolders(token, currentFolder.id);
+        } else {
+          const rootFolder = await ensureGoogleDriveRootFolder(token);
+          setFolderPath([rootFolder]);
+          await loadFolders(token, rootFolder.id);
+        }
+      } catch (error: any) {
+        setFolderError(error?.message || t("googleDriveDialog.error"));
+      } finally {
+        setIsFolderLoading(false);
+      }
+    },
+    [folderPath, loadFolders, t],
+  );
 
   const handleExport = async () => {
     if (!elements.length) {
@@ -335,13 +364,22 @@ export const ExportToGoogleDrive: React.FC<{
                     <div className="ExportToGoogleDrive__folderBrowser__name">
                       {folder.name}
                     </div>
-                    <ToolButton
-                      type="button"
-                      aria-label={t("googleDriveDialog.openFolder")}
-                      title={t("googleDriveDialog.openFolder")}
-                      showAriaLabel={true}
-                      onClick={() => handleOpenFolder(folder)}
-                    />
+                    <div className="ExportToGoogleDrive__folderBrowser__actions">
+                      <ToolButton
+                        type="button"
+                        aria-label={t("googleDriveDialog.openFolder")}
+                        title={t("googleDriveDialog.openFolder")}
+                        showAriaLabel={true}
+                        onClick={() => handleOpenFolder(folder)}
+                      />
+                      <ToolButton
+                        type="button"
+                        aria-label={t("labels.delete")}
+                        title={t("labels.delete")}
+                        showAriaLabel={true}
+                        onClick={() => handleDeleteFolder(folder.id)}
+                      />
+                    </div>
                   </li>
                 ))}
               </ul>

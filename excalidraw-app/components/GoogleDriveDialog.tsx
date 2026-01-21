@@ -3,19 +3,25 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { loadFromBlob } from "@excalidraw/excalidraw/data/blob";
 import { Dialog } from "@excalidraw/excalidraw/components/Dialog";
 import { ToolButton } from "@excalidraw/excalidraw/components/ToolButton";
+import { TextField } from "@excalidraw/excalidraw/components/TextField";
 import { useI18n } from "@excalidraw/excalidraw/i18n";
+import { serializeAsJSON } from "@excalidraw/excalidraw/data/json";
+import { MIME_TYPES } from "@excalidraw/common";
 
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 import {
   clearGoogleDriveAuth,
   downloadGoogleDriveFile,
+  deleteGoogleDriveFile,
   ensureGoogleDriveToken,
+  ensureGoogleDriveFolder,
   ensureGoogleDriveRootFolder,
   getCachedGoogleDriveToken,
   isGoogleDriveConfigured,
   listGoogleDriveFolders,
   listGoogleDriveFiles,
+  uploadGoogleDriveFile,
 } from "../data/googleDrive";
 
 import { GoogleDriveIcon } from "./GoogleDriveIcon";
@@ -34,6 +40,10 @@ export const GoogleDriveDialog: React.FC<{
   const [folders, setFolders] = useState<DriveFile[]>([]);
   const [folderPath, setFolderPath] = useState<DriveFile[]>([]);
   const folderPathRef = useRef<DriveFile[]>([]);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [newFileName, setNewFileName] = useState("");
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(() =>
@@ -112,6 +122,97 @@ export const GoogleDriveDialog: React.FC<{
     setFiles([]);
     setFolders([]);
     setFolderPath([]);
+    setNewFolderName("");
+    setNewFileName("");
+  };
+
+  const normalizeName = (name: string) =>
+    name.trim().replace(/[\\/:*?"<>|]+/g, "-");
+
+  const getCurrentFolder = () => {
+    return folderPath.length ? folderPath[folderPath.length - 1] : null;
+  };
+
+  const handleCreateFolder = async () => {
+    const normalizedName = normalizeName(newFolderName);
+    if (!normalizedName) {
+      setError(t("googleDriveDialog.invalidName"));
+      return;
+    }
+    const currentFolder = getCurrentFolder();
+    if (!currentFolder) {
+      return;
+    }
+    setIsCreatingFolder(true);
+    setError(null);
+    try {
+      const token = await ensureGoogleDriveToken({ interactive: true });
+      await ensureGoogleDriveFolder({
+        token,
+        name: normalizedName,
+        parentId: currentFolder.id,
+      });
+      setNewFolderName("");
+      await loadFolderContents(token, currentFolder);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || t("googleDriveDialog.error"));
+    } finally {
+      setIsCreatingFolder(false);
+    }
+  };
+
+  const handleCreateFile = async () => {
+    const normalizedName = normalizeName(newFileName);
+    if (!normalizedName) {
+      setError(t("googleDriveDialog.invalidName"));
+      return;
+    }
+    const currentFolder = getCurrentFolder();
+    if (!currentFolder) {
+      return;
+    }
+    setIsCreatingFile(true);
+    setError(null);
+    try {
+      const token = await ensureGoogleDriveToken({ interactive: true });
+      const baseName = normalizedName.replace(/\.excalidraw$/i, "");
+      const serialized = serializeAsJSON([], {}, {}, "local");
+      const blob = new Blob([serialized], { type: MIME_TYPES.excalidraw });
+      await uploadGoogleDriveFile({
+        token,
+        name: `${baseName}.excalidraw`,
+        mimeType: MIME_TYPES.excalidraw,
+        blob,
+        parentId: currentFolder.id,
+      });
+      setNewFileName("");
+      await loadFolderContents(token, currentFolder);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || t("googleDriveDialog.error"));
+    } finally {
+      setIsCreatingFile(false);
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    const currentFolder = getCurrentFolder();
+    if (!currentFolder) {
+      return;
+    }
+    setIsLoading(true);
+    setError(null);
+    try {
+      const token = await ensureGoogleDriveToken({ interactive: true });
+      await deleteGoogleDriveFile(token, itemId);
+      await loadFolderContents(token, currentFolder);
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message || t("googleDriveDialog.error"));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOpenFolder = async (folder: DriveFile) => {
@@ -246,6 +347,38 @@ export const GoogleDriveDialog: React.FC<{
 
         {configured && isConnected && (
           <div className="GoogleDriveDialog__content">
+            <div className="GoogleDriveDialog__create">
+              <TextField
+                label={t("googleDriveDialog.newFolderLabel")}
+                placeholder={t("googleDriveDialog.newFolderPlaceholder")}
+                value={newFolderName}
+                onChange={setNewFolderName}
+                fullWidth
+              />
+              <ToolButton
+                type="button"
+                aria-label={t("googleDriveDialog.createFolderButton")}
+                title={t("googleDriveDialog.createFolderButton")}
+                showAriaLabel={true}
+                onClick={handleCreateFolder}
+                disabled={isCreatingFolder || !newFolderName.trim()}
+              />
+              <TextField
+                label={t("googleDriveDialog.newFileLabel")}
+                placeholder={t("googleDriveDialog.newFilePlaceholder")}
+                value={newFileName}
+                onChange={setNewFileName}
+                fullWidth
+              />
+              <ToolButton
+                type="button"
+                aria-label={t("googleDriveDialog.createFileButton")}
+                title={t("googleDriveDialog.createFileButton")}
+                showAriaLabel={true}
+                onClick={handleCreateFile}
+                disabled={isCreatingFile || !newFileName.trim()}
+              />
+            </div>
             {folderPath.length > 0 && (
               <div className="GoogleDriveDialog__path">
                 <ToolButton
@@ -279,13 +412,22 @@ export const GoogleDriveDialog: React.FC<{
                         {t("googleDriveDialog.folderLabel")}
                       </div>
                     </div>
-                    <ToolButton
-                      type="button"
-                      aria-label={t("googleDriveDialog.openFolder")}
-                      title={t("googleDriveDialog.openFolder")}
-                      showAriaLabel={true}
-                      onClick={() => handleOpenFolder(folder)}
-                    />
+                    <div className="GoogleDriveDialog__item__actions">
+                      <ToolButton
+                        type="button"
+                        aria-label={t("googleDriveDialog.openFolder")}
+                        title={t("googleDriveDialog.openFolder")}
+                        showAriaLabel={true}
+                        onClick={() => handleOpenFolder(folder)}
+                      />
+                      <ToolButton
+                        type="button"
+                        aria-label={t("labels.delete")}
+                        title={t("labels.delete")}
+                        showAriaLabel={true}
+                        onClick={() => handleDeleteItem(folder.id)}
+                      />
+                    </div>
                   </li>
                 ))}
                 {files.map((file) => (
@@ -300,14 +442,23 @@ export const GoogleDriveDialog: React.FC<{
                         </div>
                       )}
                     </div>
-                    <ToolButton
-                      type="button"
-                      aria-label={t("buttons.load")}
-                      title={t("buttons.load")}
-                      showAriaLabel={true}
-                      disabled={!excalidrawAPI}
-                      onClick={() => handleImport(file.id)}
-                    />
+                    <div className="GoogleDriveDialog__item__actions">
+                      <ToolButton
+                        type="button"
+                        aria-label={t("buttons.load")}
+                        title={t("buttons.load")}
+                        showAriaLabel={true}
+                        disabled={!excalidrawAPI}
+                        onClick={() => handleImport(file.id)}
+                      />
+                      <ToolButton
+                        type="button"
+                        aria-label={t("labels.delete")}
+                        title={t("labels.delete")}
+                        showAriaLabel={true}
+                        onClick={() => handleDeleteItem(file.id)}
+                      />
+                    </div>
                   </li>
                 ))}
               </ul>

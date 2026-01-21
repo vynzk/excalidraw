@@ -80,11 +80,24 @@
     color: var(--color-gray-60);
   }
 
+  .GoogleDriveDialog__item__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
   .GoogleDriveDialog__path {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.85rem;
     color: var(--color-gray-70);
+  }
+
+  .GoogleDriveDialog__create {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: end;
   }
 }

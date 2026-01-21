@@ -77,4 +77,10 @@
     white-space: nowrap;
     max-width: 32ch;
   }
+
+  .ExportToGoogleDrive__folderBrowser__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
 }

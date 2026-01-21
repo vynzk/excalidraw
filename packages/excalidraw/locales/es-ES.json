@@ -435,7 +435,14 @@
     "notConfigured": "Google Drive no está configurado para este despliegue.",
     "currentFolder": "Carpeta actual: {{name}}",
     "openFolder": "Abrir carpeta",
-    "folderLabel": "Carpeta"
+    "folderLabel": "Carpeta",
+    "newFolderLabel": "Nombre de la carpeta nueva",
+    "newFolderPlaceholder": "Crear dentro de la carpeta actual",
+    "createFolderButton": "Crear carpeta",
+    "newFileLabel": "Nombre del archivo nuevo",
+    "newFilePlaceholder": "Crear un archivo de Excalidraw",
+    "createFileButton": "Crear archivo",
+    "invalidName": "Ingresa un nombre válido."
   },
   "helpDialog": {
     "blog": "Lea nuestro blog",

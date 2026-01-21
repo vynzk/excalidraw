@@ -435,7 +435,14 @@
     "notConfigured": "Google Drive is not configured for this deployment.",
     "currentFolder": "Current folder: {{name}}",
     "openFolder": "Open folder",
-    "folderLabel": "Folder"
+    "folderLabel": "Folder",
+    "newFolderLabel": "New folder name",
+    "newFolderPlaceholder": "Create inside current folder",
+    "createFolderButton": "Create folder",
+    "newFileLabel": "New file name",
+    "newFilePlaceholder": "Create an Excalidraw file",
+    "createFileButton": "Create file",
+    "invalidName": "Enter a valid name."
   },
   "helpDialog": {
     "blog": "Read our blog",
