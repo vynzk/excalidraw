@@ -96,10 +96,7 @@ import Collab, {
 import { AppFooter } from "./components/AppFooter";
 import { AppMainMenu } from "./components/AppMainMenu";
 import { AppWelcomeScreen } from "./components/AppWelcomeScreen";
-import {
-  ExportToExcalidrawPlus,
-  exportToExcalidrawPlus,
-} from "./components/ExportToExcalidrawPlus";
+import { exportToExcalidrawPlus } from "./components/ExportToExcalidrawPlus";
 import { ExportToGoogleDrive } from "./components/ExportToGoogleDrive";
 import { TopErrorBoundary } from "./components/TopErrorBoundary";
 
@@ -826,24 +823,6 @@ const ExcalidrawWrapper = () => {
                 ? (elements, appState, files) => {
                     return (
                       <>
-                        <ExportToExcalidrawPlus
-                          elements={elements}
-                          appState={appState}
-                          files={files}
-                          name={excalidrawAPI.getName()}
-                          onError={(error) => {
-                            excalidrawAPI?.updateScene({
-                              appState: {
-                                errorMessage: error.message,
-                              },
-                            });
-                          }}
-                          onSuccess={() => {
-                            excalidrawAPI.updateScene({
-                              appState: { openDialog: null },
-                            });
-                          }}
-                        />
                         {showGoogleDrive && (
                           <ExportToGoogleDrive
                             elements={elements}

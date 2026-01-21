@@ -20,6 +20,13 @@
     font-weight: 600;
   }
 
+  .ExportToGoogleDrive__folderBrowser__create {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    align-items: end;
+  }
+
   .ExportToGoogleDrive__folderBrowser__path {
     display: flex;
     align-items: center;
@@ -69,5 +76,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 32ch;
+  }
+
+  .ExportToGoogleDrive__folderBrowser__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
 }

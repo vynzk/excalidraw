@@ -413,7 +413,11 @@
     "googleDrive_fileNameLabel": "Nombre del archivo",
     "googleDrive_fileNamePlaceholder": "Predeterminado: {{defaultName}}",
     "googleDrive_folderPickerLabel": "Carpeta",
-    "googleDrive_connectToBrowse": "Conéctate para explorar carpetas."
+    "googleDrive_connectToBrowse": "Conéctate para explorar carpetas.",
+    "googleDrive_newFolderLabel": "Nombre de la carpeta nueva",
+    "googleDrive_newFolderPlaceholder": "Crear dentro de {{root}}",
+    "googleDrive_createFolderButton": "Crear carpeta",
+    "googleDrive_invalidFolderName": "Ingresa un nombre de carpeta válido."
   },
   "googleDriveDialog": {
     "title": "Google Drive",
@@ -431,7 +435,14 @@
     "notConfigured": "Google Drive no está configurado para este despliegue.",
     "currentFolder": "Carpeta actual: {{name}}",
     "openFolder": "Abrir carpeta",
-    "folderLabel": "Carpeta"
+    "folderLabel": "Carpeta",
+    "newFolderLabel": "Nombre de la carpeta nueva",
+    "newFolderPlaceholder": "Crear dentro de la carpeta actual",
+    "createFolderButton": "Crear carpeta",
+    "newFileLabel": "Nombre del archivo nuevo",
+    "newFilePlaceholder": "Crear un archivo de Excalidraw",
+    "createFileButton": "Crear archivo",
+    "invalidName": "Ingresa un nombre válido."
   },
   "helpDialog": {
     "blog": "Lea nuestro blog",

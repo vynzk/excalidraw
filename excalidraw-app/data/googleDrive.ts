@@ -471,3 +471,9 @@ export const downloadGoogleDriveFile = async (
   );
   return response.blob();
 };
+
+export const deleteGoogleDriveFile = async (token: string, fileId: string) => {
+  await fetchDrive(`${DRIVE_API_BASE_URL}/files/${fileId}`, token, {
+    method: "DELETE",
+  });
+};
